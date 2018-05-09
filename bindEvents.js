@@ -1,7 +1,3 @@
-//希望得到的状态、以及时间改变的状态
-// var o = {change:1};
-//建议使用方式
-// final.bind(o);
 /*
 	1、希望操作
 	var o = {
@@ -122,9 +118,8 @@ function mouseDown(event){
 	},1000);
 }
 
-//考虑keysPressed状态
-//如需要处理对象container
-
+//考虑keysPressed状态，可以如下处理：
+//假如需要处理对象container
 //bindEvents.bind(container);
 //container.timer = setInterval(()=>update(), 1000/50);
 
