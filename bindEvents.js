@@ -125,16 +125,16 @@ function mouseDown(event){
 
 function update(){
 	if(container.keysPressed[code('up')] || container.keysPressed[code('W')]) {
-		console.log("上键")；
+		console.log("上键");
 	}
 	if(container.keysPressed[code('down')] || container.keysPressed[code('S')]) {
-		console.log("下键")；
+		console.log("下键");
 	}
 	if(container.keysPressed[code('left')] || container.keysPressed[code('A')]) {
-		console.log("左键")；
+		console.log("左键");
 	}
 	if(container.keysPressed[code('right')] || container.keysPressed[code('D')]) {
-		console.log("右键")；
+		console.log("右键");
 	}
 	if(container.keysPressed[code(' ')] && container.firedAt === 1){
 		console.log('fire');
