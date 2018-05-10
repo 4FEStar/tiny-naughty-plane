@@ -283,7 +283,7 @@ function eventMousedown(event){
 
 //考虑keysPressed状态
 //如需要处理对象container
-
+/*
 var container = document.getElementById('container');
 var w = (document.clientWidth || window.innerWidth || document.documentElement.clientWidth);
 var h = (document.clientHeight || window.innerHeight || document.documentElement.clientHeight);
@@ -308,8 +308,9 @@ function callback(x,y,del){
 	container.style.left = x + 'px';
 }
 
-setInterval(()=>{
-	callback(container.x,container.y,container.del);
-},1000/60);
+// setInterval(()=>{
+// 	callback(container.x,container.y,container.del);
+// },1000/60);
+*/
 
 
