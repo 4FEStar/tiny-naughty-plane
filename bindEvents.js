@@ -1,27 +1,42 @@
 /*
-	1、希望操作
-	var o = {
-		keysPressed: {},//记录对应键值的状态
-		fireAt: false //是否开火
+1.期望输入对象o，有如下属性
+var o = {
+	x: 100,
+	y: 100,
+	del: {
+		x:1,
+		y:1
 	}
-	2、使用方式
-	bindEvents.bind(o);
-	3、处理输出：主要考虑keysPressed对应键值状态，参考最末注释
-	4、暂未处理：
-	- 兼容性、
-	- 封装方式（工具函数和部分函数在外面。不清楚其他模块运行方式，暂时这样）
-	- resize还未处理，原因同上
-	- 解绑
+	keysPressed:{}//用来记录按键状态
+}
+2.建议使用方式
+bindEvents(o,callback);
+3.callback函数必须有参数：x/y/dir，对应处理对象的x，y，del属性。
 */
+function bindEvents(o,callback) {
+	var x = o.x,
+		y = o.y,
+		dir = {},
+		vel = {x:0,y:0};
+	var acc	= 30;
+	var maxSpeed = 90;
+	var rotSpeed = 360;
+	var tDelta = 80/1000;
 
-function bindEvents(o) {
 	//事件绑定
-	document.addEventListener('keydown',eventKeydown);
-	document.addEventListener('keypress',eventKeypress);
-	document.addEventListener('keyup',eventKeyup);
+	EventUtil.addHandler(document, 'keydown',eventKeydown);
+	EventUtil.addHandler(document, 'keypress',eventKeypress);
+	EventUtil.addHandler(document, 'keyup',eventKeyup);
 
 	//事件处理函数
 	function eventKeydown(event){
+		x = o.x;
+		y = o.y;
+		dir.x = o.del.x;
+		dir.y = o.del.y;
+
+		//处理事件相关
+		var event = EventUtil.getEvent(event);
 		if(event.ctrlKey || event.shiftKey){
 			return;
 		}
@@ -34,49 +49,82 @@ function bindEvents(o) {
 		if ( indexOf([code('up'), code('down'), code('right'), code('left'), code(' '), code('B'), code('W'), code('A'), code('S'), code('D')], event.keyCode) != -1 ) {
 			if ( event.ctrlKey || event.shiftKey )
 				return;
-			if ( event.preventDefault )
-				event.preventDefault();
-			if ( event.stopPropagation)
-				event.stopPropagation();
-			event.returnValue = false;
-			event.cancelBubble = true;
-			return false;
+			EventUtil.preventDefault(event);
+			EventUtil.stopPropagation(event);
 		}
+
+		//滑动
+		if((o.keysPressed[code('up')]) || o.keysPressed[code('W')]){
+			//处理速度
+			vel.x += dir.x * acc * tDelta;
+			vel.y += dir.y * acc * tDelta;
+
+			if(quickerSpeed(vel.x,vel.y) > maxSpeed){
+				var l = quickerSpeed(vel.x,vel.y);
+				if(l){
+					vel.x = vel.x * (maxSpeed / l);
+					vel.y = vel.y * (maxSpeed / l);
+				}else{
+					vel.x = vel.y = maxSpeed;
+				}
+			}
+			console.log("press: "+vel.x);
+			x += vel.x * tDelta;
+			y += vel.y * tDelta;
+		}else{
+			vel.x *= 0.96;
+			vel.y *= 0.96;
+		}
+
+		if((o.keysPressed[code('left')]) || o.keysPressed[code('A')]){
+			var angle = radians(rotSpeed * tDelta * -1);
+			dir.x = rotateX(dir.x,dir.y,angle);
+			dir.y = rotateY(dir.x,dir.y,angle);
+		}//dir
+
+		if((o.keysPressed[code('right')]) || o.keysPressed[code('D')]){
+			var angle = radians(rotSpeed * tDelta);
+			dir.x = rotateX(dir.x,dir.y,angle);
+			dir.y = rotateY(dir.x,dir.y,angle);
+		}//dir
+
+		callback(x,y,dir);
 	}
 
 	function eventKeypress(event){
+		var event = EventUtil.getEvent(event);
 		if ( indexOf([code('up'), code('down'), code('right'), code('left'), code(' '), code('W'), code('A'), code('S'), code('D')], event.keyCode || event.which) != -1 ) {
 			if ( event.ctrlKey || event.shiftKey )
 				return;
 			
-			if ( event.preventDefault )
-				event.preventDefault();
-			if ( event.stopPropagation )
-				event.stopPropagation();
-			event.returnValue = false;
-			event.cancelBubble = true;
-			return false;
+			EventUtil.preventDefault(event);
+			EventUtil.stopPropagation(event);
 		}
 	}
 
 	function eventKeyup(event){
+		if((o.keysPressed[code('up')] || (o.keysPressed[code('W')]))){
+			var _timer = setInterval(()=>{
+				if(vel.x < 0.005 && vel.y < 0.005){
+					clearInterval(_timer);
+				}
+				x += vel.x * tDelta;
+				y += vel.y * tDelta;
+				callback(x,y,dir);
+				vel.x *= 0.90;
+				vel.y *= 0.90;
+				console.log("up: "+vel.x);
+			},1000/60);
+		}
+		//处理事件
+		var event = EventUtil.getEvent(event);
 		o.keysPressed[event.keyCode] = false;
 		if ( indexOf([code('up'), code('down'), code('right'), code('left'), code(' '), code('B'), code('W'), code('A'), code('S'), code('D')], event.keyCode) != -1 ) {
-			if ( event.preventDefault )
-				event.preventDefault();
-			if ( event.stopPropagation )
-				event.stopPropagation();
-			event.returnValue = false;
-			event.cancelBubble = true;
-			return false;
+			EventUtil.preventDefault(event);
+			EventUtil.stopPropagation(event);
 		}
 	}
 }
-
-//兼容性处理函数
-
-
-
 
 //辅助函数
 function code(name){
@@ -94,9 +142,88 @@ function indexOf(arr, item, from){
 	return -1;
 }
 
+function radians(deg) {
+	return deg * Math.PI / 180;
+}
+
+function rotateX(dirX,dirY,angle){
+	var test =  dirX * Math.cos(angle) - Math.sin(angle) * dirY;
+	return test;
+}
+function rotateY(dirX,dirY,angle){
+	return dirX * Math.sin(angle) + Math.cos(angle) * dirY;
+}
+
+function getAngle(x,y,dir){
+	var dietY = dir.y - y;
+	var dietX = dir.x - x;
+	return Math.atan(dietX,dietY) / Math.PI * 180;
+}
+
+function quickerSpeed(x,y){
+	var l = Math.sqrt(x * x, y * y);
+	if(l < 0.005 && l > - 0.005) return 0;
+	return l;
+}//某过小范围认为是0
+
+function throttle(fn, time = 500){
+  let timer;
+  return function(...args){
+    if(timer == null){
+      fn.apply(this,  args);
+      timer = setTimeout(() => {
+        timer = null;
+      }, time)
+    }
+  }
+}
+
+//兼容事件处理
+var EventUtil = {
+	addHandler: function(element,type,handler){
+		if(typeof addEventListener == 'function'){
+			element.addEventListener(type,handler,false);
+		} else if(typeof attachEvent == 'function'){
+			element.attachEvent('on'+type,handler);
+		}else{
+			element['on'+type] = handler;
+		}
+	},
+	removeHandler: function(element,type,handler){
+		if(typeof removeEventListener == 'function'){
+			element.removeEventListener(type,handler,false);
+		}else if(typeof detachEvent == 'function'){
+			element.detachEvent('on'+type,handler);
+		}else{
+			element['on'+type] = null;
+		}
+	},
+	getEvent: function(event){
+		return event?event:window.event;
+	},
+	getTarget: function(event){
+		return event.target || event.srcElement;
+	},
+	preventDefault: function(event){
+		if(typeof event.preventDefault == 'function'){
+			event.preventDefault();
+		}else{
+			event.returnValue = false;
+		}
+	},
+	stopPropagation: function(event){
+		if(typeof event.stopPropagation == 'function'){
+			event.stopPropagation();
+		}else{
+			event.cancelBubble = true;
+		}
+	}
+};
+
 //mousedown先放外面
-document.addEventListener('mousedown',mouseDown);
-function mouseDown(event){
+EventUtil.addHandler(document,'mousedown',eventMousedown);
+function eventMousedown(event){
+	var event = EventUtil.getEvent(event);
 	var message = document.createElement('span');
 
 	message.style.position = 'absolute';
@@ -118,31 +245,35 @@ function mouseDown(event){
 	},1000);
 }
 
-//考虑keysPressed状态，可以如下处理：
-//假如需要处理对象container
-//bindEvents.bind(container);
-//container.timer = setInterval(()=>update(), 1000/50);
+//考虑keysPressed状态
+//如需要处理对象container
+/*
+var container = document.getElementById('container');
+var w = (document.clientWidth || window.innerWidth || document.documentElement.clientWidth);
+var h = (document.clientHeight || window.innerHeight || document.documentElement.clientHeight);
+container.keysPressed = {};
+container.firedAt = false;
 
-function update(){
-	if(container.keysPressed[code('up')] || container.keysPressed[code('W')]) {
-		console.log("上键");
-	}
-	if(container.keysPressed[code('down')] || container.keysPressed[code('S')]) {
-		console.log("下键");
-	}
-	if(container.keysPressed[code('left')] || container.keysPressed[code('A')]) {
-		console.log("左键");
-	}
-	if(container.keysPressed[code('right')] || container.keysPressed[code('D')]) {
-		console.log("右键");
-	}
-	if(container.keysPressed[code(' ')] && container.firedAt === 1){
-		console.log('fire');
-		container.fireAt = false;
-	}
-	if(container.keysPressed[code('esc')]){
-		console.log('exit');
-	}
+container.x = 100;
+container.y = 100;
+container.del = {
+	x: 1,
+	y: 1
+}; //container.dir是dom的特殊用值？
+bindEvents(container,callback);
+
+function callback(x,y,del){
+	container.x = x;
+	container.y = y;
+	container.del.x = del.x;
+	container.del.y = del.y;
+	console.log("x: "+x,"y: "+y,"del: "+ del.x+ ", "+del.y);
+	container.style.top = y + 'px';
+	container.style.left = x + 'px';
 }
+
+// setInterval(()=>{
+// 	callback(container.x,container.y,container.del);
+// },1000/60);
 
 */
