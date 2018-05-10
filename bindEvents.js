@@ -17,6 +17,7 @@ function bindEvents(o,callback) {
 	var x = o.x,
 		y = o.y,
 		dir = {},
+		scrollPos = {},
 		vel = {x:0,y:0};
 	var acc	= 30;
 	var maxSpeed = 90;
@@ -34,6 +35,8 @@ function bindEvents(o,callback) {
 		y = o.y;
 		dir.x = o.del.x;
 		dir.y = o.del.y;
+		scrollPos.x = window.pageXOffset || document.documentElement.scrollLeft;
+		scrollPos.y = window.pageYOffset || document.documentElement.scrollTop;
 
 		//处理事件相关
 		var event = EventUtil.getEvent(event);
@@ -88,6 +91,22 @@ function bindEvents(o,callback) {
 			dir.y = rotateY(dir.x,dir.y,angle);
 		}//dir
 
+		if(x > w){
+			window.scrollTo(scrollPos.x + 50, scrollPos.y);
+			x = 0;
+		}else if ( x < 0){
+			window.scrollTo(scrollPos.x - 50, scrollPos.y);
+			x = w;
+		}
+
+		if(y > h){
+			window.scrollTo(scrollPos.x, scrollPos.y + h * 0.75);
+			y = 0;
+		}else if (y < 0 ){
+			window.scrollTo(scrollPos.x, scrollPos.y - h * 0.75);
+			y = h;
+		}
+
 		callback(x,y,dir);
 	}
 
@@ -110,6 +129,21 @@ function bindEvents(o,callback) {
 				}
 				x += vel.x * tDelta;
 				y += vel.y * tDelta;
+				if(x > w){
+					window.scrollTo(scrollPos.x + 50, scrollPos.y);
+					x = 0;
+				}else if ( x < 0){
+					window.scrollTo(scrollPos.x - 50, scrollPos.y);
+					x = w;
+				}
+
+				if(y > h){
+					window.scrollTo(scrollPos.x, scrollPos.y + h * 0.75);
+					y = 0;
+				}else if (y < 0 ){
+					window.scrollTo(scrollPos.x, scrollPos.y - h * 0.75);
+					y = h;
+				}
 				callback(x,y,dir);
 				vel.x *= 0.90;
 				vel.y *= 0.90;
@@ -245,17 +279,19 @@ function eventMousedown(event){
 	},1000);
 }
 
+
+
 //考虑keysPressed状态
 //如需要处理对象container
-/*
+
 var container = document.getElementById('container');
 var w = (document.clientWidth || window.innerWidth || document.documentElement.clientWidth);
 var h = (document.clientHeight || window.innerHeight || document.documentElement.clientHeight);
 container.keysPressed = {};
 container.firedAt = false;
 
-container.x = 100;
-container.y = 100;
+container.x = 0;
+container.y = 0;
 container.del = {
 	x: 1,
 	y: 1
@@ -272,8 +308,8 @@ function callback(x,y,del){
 	container.style.left = x + 'px';
 }
 
-// setInterval(()=>{
-// 	callback(container.x,container.y,container.del);
-// },1000/60);
+setInterval(()=>{
+	callback(container.x,container.y,container.del);
+},1000/60);
 
-*/
+
