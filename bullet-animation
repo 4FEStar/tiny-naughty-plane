@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="snap.svg-min.js"></script>
+    <script src="./bullet-1.2.2.js"></script>
+</head>
+
+<body>
+    <svg id="mysvg" width="1000" height="700" style="border: 2px solid;"></svg>
+    <button id="button">BBå¼¹</button>
+    <a href="javascript:document.getElementsByTagName('body')[0].innerHTML = '';">hhhhhh</a>
+    <script type="text/javascript">
+        let svg = Snap('#mysvg');
+        let b1 = [];
+        document.getElementById("button").onclick = function () {
+            for (let i = 0; i < 1; i++)
+                b1[i] = test();
+        }
+        function test() {
+            let b1 = new threeBullet(svg, Math.ceil(Math.random() * 1000 + 30), Math.ceil(Math.random() * 700 + 30), {
+                x: 1,
+                y: 1.5
+            });
+            b1.move();
+
+            setTimeout(() => {
+                b1.booom();
+            }, Math.ceil(Math.random() * 1000 + 500));
+            return b1;
+        };
+    </script>
+</body>
+</html>
