@@ -17,25 +17,43 @@ class menu{
 			this.navigation = document.createElement('div');
 			this.navigation.id = "ASTEROIDS-NAVIGATION";
 			this.navigation.className = "ASTEROIDSYEAH";
-			with ( this.navigation.style ) {
-				fontFamily = "Arial,sans-serif";
-				position = "fixed";
-				zIndex = "10001";
-				bottom = "0px";
-				right = "10px";
-				textAlign = "left";
-				background = '#fff';
-				color = 'pink';
-				padding = '2px';
-				border = '1px solid #e1e1e1';
-				boxShadow = '-2px -2px 15px #333';
-				borderRadius = "3px";
-				fontSize = "70px";
-				width = "300px";
-				height = "80px";
+			this.navigation.style = 
+			`
+			font-family: Arial, sans-serif;
+			position: fixed;
+			z-index: 10001;
+			bottom: 0px;
+			right: 10px;
+			text-align: left;
+			background: rgb(255, 255, 255);
+			color: pink;
+			padding: 2px;
+			border: 1px solid rgb(225, 225, 225);
+			box-shadow: rgb(51, 51, 51) -2px -2px 15px;
+			border-radius: 3px;
+			font-size: 70px;
+			width: 300px;
+			height: 80px;
+			`
+			// with ( this.navigation.style ) {
+			// 	fontFamily = "Arial,sans-serif";
+			// 	position = "fixed";
+			// 	zIndex = "10001";
+			// 	bottom = "0px";
+			// 	right = "10px";
+			// 	textAlign = "left";
+			// 	background = '#fff';
+			// 	color = 'pink';
+			// 	padding = '2px';
+			// 	border = '1px solid #e1e1e1';
+			// 	boxShadow = '-2px -2px 15px #333';
+			// 	borderRadius = "3px";
+			// 	fontSize = "70px";
+			// 	width = "300px";
+			// 	height = "80px";
 
-			}
-			this.gameContainer.appendChild(this.navigation);
+			// }
+			document.body.appendChild(this.navigation);
 			
 
 			// button1

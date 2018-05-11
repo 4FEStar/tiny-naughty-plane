@@ -6,12 +6,10 @@
         // 给定x,y获取该点是否在某元素的边界
         checkCollision(x, y) {
             var oPoint = document.elementFromPoint(x, y);
-
             var L = Math.floor(oPoint.getBoundingClientRect().left);
             var T = Math.floor(oPoint.getBoundingClientRect().top);
             var R = Math.floor(oPoint.getBoundingClientRect().right);
             var B = Math.floor(oPoint.getBoundingClientRect().bottom);
-            console.log(oPoint, L,T,R,B,x,y )
             if (x == L || x == R || y == T || y == B) {
                 return oPoint;
             } else {
@@ -486,6 +484,7 @@
 
     // 事件处理
     // cbs.pos() 传入位置， cbs.fire()
+
     function eventBind(pos, cbs) {
         //兼容事件处理
         let EventUtil = {
@@ -537,11 +536,14 @@
                 dir = {},
                 vel = { x: 0, y: 0 },
                 angle;
+            var scrollPos = {};
+            var w = (document.clientWidth || window.innerWidth || document.documentElement.clientWidth);
+            var h = (document.clientHeight || window.innerHeight || document.documentElement.clientHeight);
 
             o.keysPressed = {};
             // o.del = { x: 1, y: 1 };
 
-            var acc = 30;
+            var acc = 500;
             var maxSpeed = 90;
             var rotSpeed = 360;
             var tDelta = 80 / 1000;
@@ -557,6 +559,9 @@
                 y = o.y;
                 dir.x = o.del.x;
                 dir.y = o.del.y;
+                firedAt = false;
+                scrollPos.x = window.pageXOffset || document.documentElement.scrollLeft;
+                scrollPos.y = window.pageYOffset || document.documentElement.scrollTop;
 
                 //处理事件相关
                 var event = EventUtil.getEvent(event);
@@ -567,7 +572,9 @@
                 switch (event.keyCode) {
                     case code(' '):
                         // o.firedAt = 1;
-                        cbs.fire(x, y, dir, angle);
+                        // cbs.fire(x, y, dir, angle);
+
+                        firedAt = true;
                         break;
                 };
                 if (indexOf([code('up'), code('down'), code('right'), code('left'), code(' '), code('B'), code('W'), code('A'), code('S'), code('D')], event.keyCode) != -1) {
@@ -580,8 +587,8 @@
                 //滑动
                 if ((o.keysPressed[code('up')]) || o.keysPressed[code('W')]) {
                     //处理速度
-                    vel.x += dir.x * acc * tDelta;
-                    vel.y += dir.y * acc * tDelta;
+                    vel.x = dir.x * acc * tDelta;
+                    vel.y = dir.y * acc * tDelta;
 
                     if (quickerSpeed(vel.x, vel.y) > maxSpeed) {
                         var l = quickerSpeed(vel.x, vel.y);
@@ -597,23 +604,60 @@
                     y += vel.y * tDelta;
                     // x = x;
                     // y = y;
+                    if(x > w){
+                        window.scrollTo(scrollPos.x + 50, scrollPos.y);
+                        x = 0;
+                    }else if ( x < 0){
+                        window.scrollTo(scrollPos.x - 50, scrollPos.y);
+                        x = w;
+                    }
+
+                    if(y > h){
+                        window.scrollTo(scrollPos.x, scrollPos.y + h * 0.75);
+                        y = 0;
+                    }else if (y < 0 ){
+                        window.scrollTo(scrollPos.x, scrollPos.y - h * 0.75);
+                        y = h;
+                    }
+                    cbs.pos(x,y,dir,angle);
                 } 
 
                 if ((o.keysPressed[code('left')]) || o.keysPressed[code('A')]) {
-                    console.log("dir: "+dir.x);
+                    if(dir.x * dir.x + dir.y * dir.y != 1){
+                        if(dir.y > 0){
+                            dir.y = Math.sqrt(1 - dir.x * dir.x);
+                        }else{
+                            dir.y = - Math.sqrt(1 - dir.x * dir.x);
+                        }
+                    }
                     angle = radians(rotSpeed * tDelta * -1);
                     dir.x = rotateX(dir.x, dir.y, angle);
                     dir.y = rotateY(dir.x, dir.y, angle);
+                    cbs.pos(x, y, dir,angle);
+
                 }//dir
 
                 if ((o.keysPressed[code('right')]) || o.keysPressed[code('D')]) {
+                    if(dir.x * dir.x + dir.y * dir.y != 1){
+                        if(dir.y > 0){
+                            dir.y = Math.sqrt(1 - dir.x * dir.x);
+                        }else{
+                            dir.y = - Math.sqrt(1 - dir.x * dir.x);
+                        }
+                    }
                     angle = radians(rotSpeed * tDelta);
                     dir.x = rotateX(dir.x, dir.y, angle);
                     dir.y = rotateY(dir.x, dir.y, angle);
-                    console.log("dir: ")
+                    cbs.pos(x, y, dir,angle);
                 }//dir
 
-                cbs.pos(x, y, dir, angle);
+                if(o.keysPressed[code(' ')] && firedAt){
+                    cbs.fire(x,y,dir,angle);
+                    firedAt = false;
+                }
+
+                // cbs.pos(x, y, dir, angle);
+                // cbs.pos(x, y, dir,angle);
             }
 
             function eventKeypress(event) {
@@ -643,6 +687,7 @@
                 //         console.log("up: " + vel.x);
                 //     });
                 // }
+                
                 //处理事件
                 var event = EventUtil.getEvent(event);
                 o.keysPressed[event.keyCode] = false;
@@ -667,6 +712,7 @@
             return deg * Math.PI / 180;
         }
         function rotateX(dirX, dirY, angle) {
+
             return dirX * Math.cos(angle) - Math.sin(angle) * dirY;
         }
         function rotateY(dirX, dirY, angle) {
@@ -840,7 +886,9 @@
     
     }   
 
+
     class TinyNaughtPlane {
+
         constructor() {
             if (!window[APPNAME]) {
                 window[APPNAME] = APPNAME;
@@ -849,6 +897,7 @@
                 this.plane = new Plane('plane1', this.svg);//定义一个飞机 class名称
                 this.plane.choiceStyle(1);//state.选择样式
                 this.plane.startLoad();
+
                 this.sign = new Sign();
 
                 console.log(this.sign.enemies);
@@ -869,8 +918,8 @@
 
             eventBind(planeState, {
                 pos(x, y, dir, angle) {
-                    let newX = (x+dir.x),
-                        newY = (y+dir.y);
+                    let newX = x,
+                        newY = y;
 
                     planeState.x = newX;
                     planeState.y = newY;
@@ -887,21 +936,18 @@
                     b1.move(()=>{
                         _self.svg.node.style.display = 'none';
                         let cldEle =  util.checkCollision(b1.x, b1.y);
-                        // _self.svg.node.style.display = 'initial';
+                        _self.svg.node.style.display = 'initial';
 
-                        // console.log('bullet x y:',b1.x, b1.y, _self.svg.node.style);
-                        // console.log('cldEle',cldEle)
+                        console.log('bullet x y:',b1.x, b1.y, _self.svg.node.style);
+                        console.log('cldEle',cldEle)
 
                         if( cldEle && _self.sign.enemies.indexOf(cldEle)){
                             b1.booom();
                             cldEle.parentNode.removeChild(cldEle);
                         }
                     });
-                    
                 }
             });
-
-            
         }
 
     }
