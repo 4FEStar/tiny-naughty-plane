@@ -38,9 +38,19 @@
                 });
 
             return svg
+        },
+
+        //随机生成十六进制颜色
+        randomHexColor() {
+            var hex = Math.floor(Math.random() * 16777216).toString(16); //生成ffffff以内16进制数
+            while (hex.length < 6) { //while循环判断hex位数，少于6位前面加0凑够6位
+                hex = '0' + hex;
+            }
+            return '#' + hex; //返回‘#'开头16进制颜色
         }
     }
 
+    // 飞机类
     class Plane {
         constructor(type, svg) {
             this.svg = svg;
@@ -159,14 +169,6 @@
                 this.m = Snap('#svg_10').matrix;
             })
         }
-    }
-
-    function randomHexColor() { //随机生成十六进制颜色
-        var hex = Math.floor(Math.random() * 16777216).toString(16); //生成ffffff以内16进制数
-        while (hex.length < 6) { //while循环判断hex位数，少于6位前面加0凑够6位
-            hex = '0' + hex;
-        }
-        return '#' + hex; //返回‘#'开头16进制颜色
     }
     
     //为了部分变量和方法私有创建的闭包
@@ -354,7 +356,7 @@
     
                 this.bullet = Array.from({ length: 10 }).map((a) => {
                     return this[_svg].paper.circle(bux, buy, 3).attr({
-                        fill: randomHexColor()
+                        fill: util.randomHexColor()
                     });
                 });
     
@@ -408,7 +410,7 @@
                 bux.forEach((x, i) => {
                     this.bullet[i] = Array.from({ length: 10 }).map((a) => {
                         return this[_svg].paper.circle(bux[i], buy[i], 3).attr({
-                            fill: randomHexColor()
+                            fill: util.randomHexColor()
                         });
                     });
     
@@ -448,7 +450,7 @@
     
                 this.bullet = Array.from({ length: 10 }).map((a) => {
                     return this[_svg].paper.circle(bux, buy, 3).attr({
-                        fill: randomHexColor()
+                        fill: util.randomHexColor()
                     });
                 });
     
@@ -479,12 +481,8 @@
         }
     }
 
-    // 新添加的子弹类要在此注册以供使用
-    let normalBullet = bulletClass('normal');
-
     // 事件处理
-    // cbs.pos() 传入位置， cbs.fire()
-
+    // cbs.pos() 传入位置， cbs.fire() 发射子弹
     function eventBind(pos, cbs) {
         //兼容事件处理
         let EventUtil = {
@@ -725,6 +723,7 @@
         }//某过小范围认为是0
     }
 
+    // 标记类
     class Sign{
         constructor(){
             this.hiddenTypes = ['BR','HR'];
@@ -790,6 +789,7 @@
         }
     }
 
+    // 其他界面元素类
     class Menu{
         constructor(){
             // navigation wrapper element
@@ -886,7 +886,7 @@
     
     }   
 
-
+    // 整合大类
     class TinyNaughtPlane {
 
         constructor() {
@@ -932,6 +932,8 @@
                 },
                 fire(x, y, dir, angle) {
                     console.log('fire', x, y, dir, angle);
+                    // 新添加的子弹类要在此注册以供使用
+                    let normalBullet = bulletClass('normal');
                     let b1 = new normalBullet(_self.svg, x, y, { x: dir.x , y: dir.y });
                     b1.move(()=>{
                         // _self.svg.node.style.display = 'none';
