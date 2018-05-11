@@ -3,38 +3,34 @@ class Sign{
         this.hiddenTypes = ['BR','HR'];
         this.ignoredTypes =  ['HTML','HEAD','BODY','SCRIPT','TITLE','META','STYLE','LINK'];
         this.enemies = [];
+        this.dying = [];
         this.enemy();        
     }
     enemy(){
         let all = document.body.getElementsByTagName('*');
-        let that = this;
         for(let i = 0,el;el = all[i];i++){
-            if(this.index(this.ignoredTypes, el.tagName.toUpperCase()) == -1 && el.prefix != 'g_vml_' && this.hasOnlyTextualChildren(el) && el.offsetHeight > 0 ) {
+            if(this.index(this.ignoredTypes, el.tagName.toUpperCase()) == -1  && this.hasOnlyTextualChildren(el) && el.offsetHeight > 0 ) {
                 this.enemies.push(el);
             }
         }
-        // this.enemies.forEach(function(el){
-        //     that.addClass(el,'blink');
-        // })
+        this.enemies.forEach(function(el){
+            el.classList.add('blink');
+        })
         // this.addStylesheet('.blink','outline:4px dotted red');
         return this.enemies;
     }
-    // addStylesheet(selector,rules){
-    //     var stylesheet = document.createElement('style');
-    //     stylesheet.type = 'text/css';
-    //     stylesheet.rel = 'stylesheet';
-    //     stylesheet.id = 'PLANE';
-    //     try {
-    //         stylesheet.innerHTML = selector + "{" + rules + "}";
-    //     } catch ( e ) {
-    //         stylesheet.styleSheet.addRule(selector, rules);
-    //     }
-    //     document.getElementsByTagName("head")[0].appendChild(stylesheet);
-    // }
-    // addClass(element, className){
-    //     if ( element.className.indexOf(className) == -1)
-    //         element.className = (element.className + ' ' + className).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
-    // }
+    addStylesheet(selector,rules){
+        var stylesheet = document.createElement('style');
+        stylesheet.type = 'text/css';
+        stylesheet.rel = 'stylesheet';
+        stylesheet.id = 'PLANE';
+        try {
+            stylesheet.innerHTML = selector + "{" + rules + "}";
+        } catch ( e ) {
+            stylesheet.styleSheet.addRule(selector, rules);
+        }
+        document.getElementsByTagName("head")[0].appendChild(stylesheet);
+    }
     hasOnlyTextualChildren(element){
         if ( element.offsetLeft < -100 && element.offsetWidth > 0 && element.offsetHeight > 0 ) return false;
         if ( this.index(this.hiddenTypes, element.tagName) != -1 ) return true;
@@ -55,6 +51,15 @@ class Sign{
             if (arr[i] === item) return i;
         }
         return -1;
+    }
+    setDyingInEnemies(murdered){
+        murdered.forEach(function(v,i){
+            if(v.parentNode){
+                this.dying.push(v.parentNode);//新的待删除dom
+            }
+            this.enemies.splice(i,0);
+        });
+        return this.enemies = this.enemies.concat(this.dying);
     }
 }
 var sign = new Sign();
