@@ -12,15 +12,48 @@
 
 <body>
     <svg id="mysvg" width="1000" height="700" style="border: 2px solid;"></svg>
-    <button id="button">Fire</button>
+    <button id="button1">Normal Fire</button>
+    <button id="button2">S Fire</button>
+    <button id="button3">More Fire</button>
     <script type="text/javascript">
         let svg = Snap('#mysvg');
-        let b1 = [];
-        document.getElementById("button").onclick = function () {
+        document.getElementById("button1").onclick = function () {
             for (let i = 0; i < 1; i++)
-                b1[i] = test();
+                test1();
         }
-        function test() {
+        document.getElementById("button2").onclick = function () {
+            for (let i = 0; i < 1; i++)
+                test2();
+        }
+        document.getElementById("button3").onclick = function () {
+            for (let i = 0; i < 1; i++)
+                test3();
+        }
+        function test1() {
+            let b1 = new normalBullet(svg, Math.ceil(Math.random() * 1000 + 30), Math.ceil(Math.random() * 700 + 30), {
+                x: 1,
+                y: 1.5
+            });
+            b1.move();
+
+            setTimeout(() => {
+                b1.booom();
+            }, Math.ceil(Math.random() * 1000 + 500));
+            return b1;
+        };
+        function test2() {
+            let b1 = new pathBullet(svg, Math.ceil(Math.random() * 1000 + 30), Math.ceil(Math.random() * 700 + 30), {
+                x: 1,
+                y: 1.5
+            });
+            b1.move();
+
+            setTimeout(() => {
+                b1.booom();
+            }, Math.ceil(Math.random() * 1000 + 500));
+            return b1;
+        };
+        function test3() {
             let b1 = new threeBullet(svg, Math.ceil(Math.random() * 1000 + 30), Math.ceil(Math.random() * 700 + 30), {
                 x: 1,
                 y: 1.5
