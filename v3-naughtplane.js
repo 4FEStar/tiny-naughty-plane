@@ -934,9 +934,9 @@
                     console.log('fire', x, y, dir, angle);
                     let b1 = new normalBullet(_self.svg, x, y, { x: dir.x , y: dir.y });
                     b1.move(()=>{
-                        _self.svg.node.style.display = 'none';
+                        // _self.svg.node.style.display = 'none';
                         let cldEle =  util.checkCollision(b1.x, b1.y);
-                        _self.svg.node.style.display = 'initial';
+                        // _self.svg.node.style.display = 'initial';
 
                         console.log('bullet x y:',b1.x, b1.y, _self.svg.node.style);
                         console.log('cldEle',cldEle)
