@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <style>
+        div.progress {
+            margin: 10px auto;
+            position: relative;
+        }
+
+        .conic {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #ccc;
+            background-image: conic-gradient(#5BB85d 0 30%, #ccc 0 100%);
+        }
+
+        .conic>div {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: inherit;
+            background-color: #fff;
+        }
+
+        .bar {
+            position: relative;
+            width: 100px;
+            height: 20px;
+            background-color: #ccc;
+            border-radius: 10px;
+        }
+
+        .bar>div {
+            position: absolute;
+            width: 30%;
+            height: 100%;
+            color: transparent;
+            background-color: #5BB85d;
+            border-radius: inherit;
+        }
+
+        .hourglass {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            background: conic-gradient(#ccc 12.5%, #fff 0 37.5%, #5BB85d 0 62.5%, #fff 0 87.5%, #ccc 0);
+        }
+
+        .hourglass>div {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 80%;
+            color: transparent;
+            background: conic-gradient(#5BB85d 12.5%, #fff 0 37.5%, #ccc 0 62.5%, #fff 0 87.5%, #5BB85d 0);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- <div class="conic"><div>30%</div></div>
+
+    <div class="bar"><div>30%</div></div>
+
+    <div class="hourglass"><div>30%</div></div> -->
+
+    <div class="test"></div>
+
+
+    <script>
+        class Progress {
+            // type: 类型，默认'bar', 可选'conic'圆环、'hourglass'倒计时
+            // bgc: 背景色，默认'#ccc', 
+            // frc: 进度条前景色，默认'#5BB85d', 
+            // pct: 进度，默认0, 
+            // el: 进度条元素选择器，默认'', 
+            // render: 自定义渲染函数，null, 传入opt，返回html内容
+            constructor(opt) {
+                this.opt = Object.assign({ type: 'bar', bgc: '#ccc', frc: '#5BB85d', pct: 0, el: null, render: null }, opt);
+                
+                this.$render();
+            }
+
+            // 渲染到页面, 属于内部私有
+            $render() {
+                // 若设置为其他类型而不提供render方法则提示报错。
+                if (['bar', 'conic', 'hourglass'].indexOf(this.opt.type) < 0 && this.opt.render === null) {
+                    console.error('Please overwrite render method if specify a new type!');
+                    return;
+                }
+
+                // 若不存在el选择器，则默认添加一个新的元素到body内
+                if (this.opt.el === null) {
+                    this.opt.el = document.createElement('div');
+                    this.opt.el.className = 'progress';
+                    document.body.appendChild(this.opt.el);
+                } else if (typeof this.opt.el === 'string') {
+                    this.opt.el = document.querySelector(this.opt.el);
+                }
+
+                // 若存在自定义render函数，则使用自定义的函数
+                let renderHtml = '';
+                if (typeof this.opt.render === 'function') {
+                    renderHtml = this.opt.render(this.opt) || console.error('Render method must return a HTML.');
+                } else {
+                    // 默认条形进度条渲染方式
+                    if (this.opt.type === 'bar') {
+                        renderHtml = `<div class="bar" style="background-color: ${this.opt.bgc} ;">
+                                        <div style="background-color: ${this.opt.frc}; width: ${this.opt.pct}%; ">${this.opt.pct}%</div>
+                                    </div>`;
+                    } else if (this.opt.type === 'conic') {
+                        renderHtml = `<div class="conic" style="background-image: conic-gradient(${this.opt.frc} 0 ${this.opt.pct}%, ${this.opt.bgc} 0 100%);">
+                                        <div>${this.opt.pct}%</div>
+                                    </div>`;
+                    } else if (this.opt.type === 'hourglass') {
+                        renderHtml = `<div class="hourglass" style="background: conic-gradient(${this.opt.bgc} 12.5%, #fff 0 37.5%, ${this.opt.frc} 0 62.5%, #fff 0 87.5%, ${this.opt.bgc} 0);">
+                                        <div style="height: ${this.opt.pct}%; background: conic-gradient(${this.opt.frc} 12.5%, #fff 0 37.5%, ${this.opt.bgc} 0 62.5%, #fff 0 87.5%, ${this.opt.frc} 0);">${this.opt.pct}%</div>
+                                    </div>`;
+                    }
+                }
+
+                this.opt.el.innerHTML = renderHtml;
+            }
+
+            // 获取当前配置信息
+            getOpt() {
+                return this.opt;
+            }
+
+            // 设置配置信息
+            setOpt(opt = {}) {
+                this.opt = Object.assign(this.opt, opt);
+                this.render();
+            }
+        }
+
+        var conic = new Progress({ el: '.test', type: 'conic', pct: 50 });
+        var bar = new Progress({ pct: 20 });
+
+    </script>
+
+    <!-- <script src="./bindEvents.js"></script> -->
+    <script src="./naughtplane.js"></script>
+
+    <!-- <script src="./asteroids.js"></script> -->
+</body>
+
+</html>
