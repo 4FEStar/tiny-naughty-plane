@@ -14,6 +14,7 @@
 		this.svg.innerHTML=this.plane;
 		this.plane=document.getElementById('svg_10')
 		this.m=new Snap.Matrix(1,0,0,1,0,0);
+		this.line_m=new Snap.Matrix(1,0,0,1,0,0);
 		let d=Snap.path.getBBox(Snap('#svg_10').attr('d'));
 		this.position={
 			x:d.cx,
@@ -21,6 +22,16 @@
 		}
 		this.planeX=this.position.x
 		this.planeY=this.position.y
+		this.do_sign = true;
+
+		this.deg = 0;
+		this.line = {
+			x: 0,
+			y: 0
+		}
+
+		Snap('#svg_10').transform(this.m.toTransformString());
+
 	}//画布样式和飞机模型
 	createStyle(planeClass,bgColor,border){
 		var style = document.createElement('style');
@@ -45,11 +56,15 @@
 			}
 	}//固定css class 升级样式
 	fly(x,y,x1,y1,speed=0.5){//x,y要去的坐标 x1,y1是要去的坐标向量
-			if(this.timer){clearInterval(this.timer)}
+			// if(this.timer){clearInterval(this.timer)}
 		console.log(Math.atan(x1/y1)*180/Math.PI);
 		let v = {
 			x: x - this.position.x,
 			y: y - this.position.y,
+		}
+		let last = {
+			x: this.position.x,
+			y: this.position.y
 		}
 		let len = Math.sqrt(v.x ** 2 + v.y ** 2);
 		// let deg=Math.atan(x1/y1)*180/Math.PI/(len/speed);
@@ -61,27 +76,139 @@
 		}
 		deg = deg/(len/speed);
 		let rad=Math.atan2(v.y,v.x) - Math.atan2(0,1)
-		console.log(rad);
-		console.log(speed*Math.cos(rad));
+		
 		let sx = this.position.x,sy = this.position.y;
 		this.test(this.position.x, this.position.y);
 		this.test(x,y);
 		var i=0;
 			this.timer = setInterval(()=>{
+			let color=this.randomHexColor;
+			this.p1.attr({opacity:0.8,stroke:color()})
+			this.p2.attr({opacity:0.8,stroke:color()})
+			this.p3.attr({opacity:0.8,stroke:color()})
 			Snap('#svg_10').transform(this.m.toTransformString());
+			Snap('#svg1').selectAll('line').forEach((a)=>{
+				a.transform(this.line_m.toTransformString());
+			});
 			this.m.add(1,0,0,1,speed*Math.cos(rad),speed*Math.sin(rad));
+			this.line_m.add(1,0,0,1,speed*Math.cos(rad),speed*Math.sin(rad));
 			this.position = {
 				x: this.position.x + speed*Math.cos(rad),
 				y: this.position.y + speed*Math.sin(rad)
 			}
 			i++;
+			let ran=Math.floor(Math.random()*3+1)
+			this['p'+ran].attr({opacity:0})
+
 			let str = this.plane.getAttribute('transform')+" rotate("+(deg*i)+", "+this.planeX +" "+this.planeY+")";
 			this.plane.setAttribute('transform',str)
-			if(Math.abs(this.position.x-sx)>=Math.abs(v.x)&&Math.abs(this.position.y-sy)>=Math.abs(v.y))
+			let line=	document.getElementsByTagName('line');
+			console.log(last.x,last.y);
+			for(let ii =0;ii<line.length;ii++){
+				let str1 = line[ii].getAttribute('transform')+" rotate("+(deg*i)+", "+last.x +" "+last.y+")";
+				line[ii].setAttribute('transform',str1)
+			}
+			if(Math.abs(this.position.x-sx)>=Math.abs(v.x)&&Math.abs(this.position.y-sy)>=Math.abs(v.y)){
+				this.p1.attr({opacity:0})
+				this.p2.attr({opacity:0})
+				this.p3.attr({opacity:0})
+				this.do_sign = true;
 				clearInterval(this.timer);
+			}
 			
 		},10);
 		
+	}
+
+	flywait(x,y,x1,y1,speed=0.5) {
+		let timer = setInterval(()=>{
+		if(this.do_sign){
+			this.do_sign = false;
+			this.fly(x,y,x1,y1,speed);
+			clearInterval(timer);
+		}
+		},10);
+	}
+	flyFront(){
+
+			let color=this.randomHexColor;
+			Snap('#svg1').selectAll('line').forEach((a,i)=>{
+				this['p'+i]=a.attr({
+					opacity:0.8,
+					stroke:color()
+				});
+			});
+			let ran=Math.floor(Math.random()*3)
+			Snap('#svg1').selectAll('line')[ran].attr({opacity:0})
+		let l = 10;
+		let x = l* Math.sin(this.deg/180*Math.PI);
+		let y = -l* Math.cos(this.deg/180*Math.PI);
+		console.log();
+		this.m.add(1,0,0,1,x,y);
+		this.line_m.add(1,0,0,1,x,y);
+		Snap('#svg_10').transform(this.m.toTransformString());
+			Snap('#svg1').selectAll('line').forEach((a)=>{
+				a.transform(this.line_m.toTransformString());
+			});
+
+			let str = this.plane.getAttribute('transform')+" rotate("+(this.deg)+", "+this.planeX +" "+this.planeY+")";
+			this.plane.setAttribute('transform',str)
+			let line = document.getElementsByTagName('line');
+			// console.log(last.x,last.y);
+			for(let ii =0;ii<line.length;ii++){
+				let str1 = line[ii].getAttribute('transform')+" rotate("+(this.deg)+", "+this.line.x +" "+this.line.y+")";
+				line[ii].setAttribute('transform',str1)
+			}
+
+			setTimeout(()=>{
+			Snap('#svg1').selectAll('line').forEach((a,i)=>{
+				this['p'+i]=a.attr({
+					opacity:0
+				});
+			});
+			}, 30);
+	}
+	flyRight() {
+
+		this.deg += 5;
+
+		Snap('#svg_10').transform(this.m.toTransformString());
+			Snap('#svg1').selectAll('line').forEach((a)=>{
+				a.transform(this.line_m.toTransformString());
+			});
+
+		console.log(this.plane.getAttribute('transform'));
+		let str = this.plane.getAttribute('transform')+" rotate("+(this.deg)+", "+this.planeX +" "+this.planeY+")";
+		this.plane.setAttribute('transform',str)
+		let line=document.getElementsByTagName('line');
+		for(let ii =0;ii<line.length;ii++){
+			let str1 = line[ii].getAttribute('transform')+" rotate("+(this.deg)+", "+this.line.x +" "+this.line.y+")";
+			line[ii].setAttribute('transform',str1)
+		}
+		console.log(this.deg);
+	}
+
+	flyLeft() {
+
+
+		this.deg -= 5;
+
+		Snap('#svg_10').transform(this.m.toTransformString());
+			Snap('#svg1').selectAll('line').forEach((a)=>{
+				a.transform(this.line_m.toTransformString());
+			});
+
+
+
+		let str = this.plane.getAttribute('transform')+" rotate("+(this.deg)+", "+this.planeX +" "+this.planeY+")";
+		this.plane.setAttribute('transform',str)
+		let line=document.getElementsByTagName('line');
+		for(let ii =0;ii<line.length;ii++){
+			let str1 = line[ii].getAttribute('transform')+" rotate("+(this.deg)+", "+this.line.x +" "+this.line.y+")";
+			line[ii].setAttribute('transform',str1)
+		}
+
+		console.log(this.deg);
 	}
 	
 	startLoad(){
@@ -89,16 +216,49 @@
 		 	Snap.animate(-150,100,(value)=>{
 		 			Snap('#svg_10').transform(new Snap.Matrix(1,0,0,1,value,value))
 		 	},1000,mina.easein,()=>{
-
 		 		this.position.x+=Snap('#svg_10').matrix.e;
 		 		this.position.y+=Snap('#svg_10').matrix.f;
+		 		this.line = {
+		 			x: this.position.x,
+		 			y: this.position.y
+		 		}
 		 		this.m=Snap('#svg_10').matrix;
+		 		this.p1 = Snap('#svg1').paper.line(d.x, d.y+13,d.x,d.y+30).attr({
+			    stroke: "#f00",
+			    strokeWidth: 6,
+			    opacity: 0
+			});
+				this.p2 = Snap('#svg1').paper.line(d.x+5,d.y+13,d.x+5,d.y+30).attr({
+			    stroke: "#f00",
+			    strokeWidth: 6	,
+			    opacity: 0
+
+			});
+				this.p3=Snap('#svg1').paper.line(d.x-5,d.y+13,d.x-5,d.y+25).attr({
+			    stroke: "#f00",
+			    strokeWidth: 3,
+			    opacity:0	
+
+			});
+
+			this.p1.transform(this.line_m.toTransformString());
+			this.p2.transform(this.line_m.toTransformString());
+			this.p3.transform(this.line_m.toTransformString());
 		 	})
+
+			
 		 }
 
 	test(x,y) {
 		Snap('#svg1').paper.circle(x, y, 5);
 	}
+	randomHexColor() { //随机生成十六进制颜色
+		    var hex = Math.floor(Math.random() * 16777216).toString(16); //生成ffffff以内16进制数
+		    while (hex.length < 6) { //while循环判断hex位数，少于6位前面加0凑够6位
+		        hex = '0' + hex;
+		    }
+		    return '#' + hex; //返回‘#'开头16进制颜色
+		}
 
 
 }
@@ -107,13 +267,20 @@ var planeClass='plane1';//定义一个svg class名称
 var plane =new Plane(planeClass);
 	plane.choiceStyle(planeState);
 	plane.startLoad()
-	setTimeout(()=>{
-		plane.fly(350, 115,1,-3,1);
-		plane.fly(100,100,1,1,1);
-	},1500);
+	// setTimeout(()=>{
+	// 	plane.flywait(350, 15,-10,10,2);
+	// 	plane.flywait(800, 600,-10,10,2);
+	// 	setTimeout(()=>{plane.flywait(300,500,10,10,2)},1000);
+	// },1500);
 
-
-	
+document.onkeydown =  function(event){
+	if (event.keyCode==37)//左 
+		plane.flyLeft(); 
+	if (event.keyCode==38)//上
+		plane.flyFront();
+	if (event.keyCode==39)//右 
+		plane.flyRight(); 
+};
 	
 	
 
