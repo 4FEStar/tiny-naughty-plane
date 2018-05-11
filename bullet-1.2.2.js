@@ -1,3 +1,11 @@
+function randomHexColor() { //随机生成十六进制颜色
+    var hex = Math.floor(Math.random() * 16777216).toString(16); //生成ffffff以内16进制数
+    while (hex.length < 6) { //while循环判断hex位数，少于6位前面加0凑够6位
+        hex = '0' + hex;
+    }
+    return '#' + hex; //返回‘#'开头16进制颜色
+}
+
 //为了部分变量和方法私有创建的闭包
 function bulletClass(bulletType = 'normal') {
     const _svg = Symbol('svg'),
@@ -16,13 +24,17 @@ function bulletClass(bulletType = 'normal') {
 
     // 子弹基础类，不要修改！不要修改！不要修改！
     class bullet {
-        constructor(svg, x, y, v = { x: 300, y: 300 }, size = 2) {
+        constructor(svg, x, y, v = { x: 1, y: 1 }, size = 3) {
             this[_svg] = svg;
             this[_x] = x;
             this[_y] = y;
             this[_v] = [];
             this[_m] = [];
             this[_size] = size;
+            v = {
+                x: v.x * 100,
+                y: v.y * 100
+            };// 乘数为每秒行进距离
             this[_v][0] = v;
             this.bullet = [];
             this.render();
@@ -56,7 +68,7 @@ function bulletClass(bulletType = 'normal') {
         }// 子弹爆炸并消失
 
         get x() {
-            function getx(obj, bb, i=0) {
+            function getx(obj, bb, i = 0) {
                 if (bb.type !== 'path')
                     return bb.getBBox().cx;
                 else if (bb.node || bb.type)
@@ -75,7 +87,7 @@ function bulletClass(bulletType = 'normal') {
         }// 获取x属性，如果子弹被销毁则不能获取
 
         get y() {
-            function gety(obj, bb, i=0) {
+            function gety(obj, bb, i = 0) {
                 if (bb.type !== 'path')
                     return bb.getBBox().cy;
                 else if (bb.node || bb.type)
@@ -86,7 +98,7 @@ function bulletClass(bulletType = 'normal') {
                 }
             }
             if (Array.isArray(this.bullet))
-                return this.bullet.map((x) => {
+                return this.bullet.map((x, i) => {
                     return gety(this, x, i);
                 });
             else
@@ -179,7 +191,7 @@ function bulletClass(bulletType = 'normal') {
 
             this.bullet = Array.from({ length: 10 }).map((a) => {
                 return this[_svg].paper.circle(bux, buy, 3).attr({
-                    fill: "#000"
+                    fill: randomHexColor()
                 });
             });
 
@@ -233,19 +245,19 @@ function bulletClass(bulletType = 'normal') {
             bux.forEach((x, i) => {
                 this.bullet[i] = Array.from({ length: 10 }).map((a) => {
                     return this[_svg].paper.circle(bux[i], buy[i], 3).attr({
-                        fill: "#000"
+                        fill: randomHexColor()
                     });
                 });
 
                 this.bullet[i].forEach((e, i) => {
                     let nowx = parseInt(e.getBBox().x + e.getBBox().x2) / 2;
                     let nowy = parseInt(e.getBBox().y + e.getBBox().y2) / 2;
-                    let xx = nowx + 50 * Math.cos(Math.PI * 2 / 10 * i);
-                    let yy = nowy + 50 * Math.sin(Math.PI * 2 / 10 * i);
+                    let xx = nowx + 35 * Math.cos(Math.PI * 2 / 10 * i);
+                    let yy = nowy + 35 * Math.sin(Math.PI * 2 / 10 * i);
                     e.animate({
                         cx: xx,
                         cy: yy
-                    }, 100, mina.linear, () => {
+                    }, 150, mina.linear, () => {
                         e.remove();
                     });
                 });
@@ -273,7 +285,7 @@ function bulletClass(bulletType = 'normal') {
 
             this.bullet = Array.from({ length: 10 }).map((a) => {
                 return this[_svg].paper.circle(bux, buy, 3).attr({
-                    fill: "#000"
+                    fill: randomHexColor()
                 });
             });
 
